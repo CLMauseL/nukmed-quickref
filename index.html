@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0b0b" />
+    <title>NukMed QuickRef</title>
+
+    <!-- Tailwind CDN (inkl. forms/typography) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "media",
+        theme: { extend: {} }
+      }
+    </script>
+
+    <!-- kleine Resets, damit nichts am Rand klebt -->
+    <style>
+      html, body, #root { height: 100%; }
+      body { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
