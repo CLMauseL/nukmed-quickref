@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-
+import { RADIOPHARMA } from "./src/radiopharmaka"
 /**
  * NukMed QuickRef – App.jsx (Daten live von GitHub JSON)
  * EINZIGE Quelle = GitHub-JSON (keine Daten mehr in dieser Datei)
