@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { RADIOPHARMA } from "./src/radiopharmaka"
-/**
- * NukMed QuickRef – App.jsx (Daten live von GitHub JSON)
- * EINZIGE Quelle = GitHub-JSON (keine Daten mehr in dieser Datei)
- *
- * TODO:https://github.com/CLMauseL/nukmed-quickref/blob/main/src/radiopharmaka.json
- *
- */
-const RAW_URL = "https://github.com/CLMauseL/nukmed-quickref/blob/main/src/radiopharmaka.json";
 
-// ============== Zerfallsrechner =============
+// ======================================================
+// NukMed QuickRef – App.jsx
+// Quelle der Daten: /public/radiopharmaka.json (relativ)
+// ======================================================
+
+const DATA_URL = "/radiopharmaka.json";
+
+// ---------- Zerfalls-Rechner (unverändert von dir) ----------
 function decay(A0, t_hours, T12_h) {
   if (!A0 || !T12_h) return 0;
   const frac = Math.pow(0.5, t_hours / T12_h);
@@ -17,18 +15,16 @@ function decay(A0, t_hours, T12_h) {
 }
 function timeToTarget(A0, At, T12_h) {
   if (!A0 || !At || !T12_h || At <= 0 || A0 <= 0 || At >= A0) return null;
-  const nHalf = Math.log(At / A0) / Math.log(0.5); // negativ
-  return Math.abs(nHalf) * T12_h; // h
+  const nHalf = Math.log(At / A0) / Math.log(0.5);
+  return Math.abs(nHalf) * T12_h;
 }
 
 function DecayCalc({ dataset }) {
-  // einzigartige Nuklide aus dem Datensatz
   const radionuclides = useMemo(
-    () => Array.from(new Set((dataset || []).map(d => d.radionuclide))),
+    () => Array.from(new Set((dataset || []).map((d) => d.radionuclide))),
     [dataset]
   );
 
-  // Halbwertszeiten-Map (h).
   const HL = {
     "Tc-99m": 6.02,
     "F-18": 1.83,
@@ -53,7 +49,7 @@ function DecayCalc({ dataset }) {
     "Xe-133": 120,
     "Kr-81m": 0.0036,
     "I-124": 100.2,
-    "Ga-67": 78.3
+    "Ga-67": 78.3,
   };
 
   const [nuclide, setNuclide] = useState(radionuclides[0] ?? "");
@@ -63,20 +59,20 @@ function DecayCalc({ dataset }) {
   const [target, setTarget] = useState(0);
   const [unit, setUnit] = useState("MBq");
 
-  // Re-Select erstes Element, falls sich Liste ändert
-  React.useEffect(() => {
+  useEffect(() => {
     if (radionuclides.length && !radionuclides.includes(nuclide)) {
       setNuclide(radionuclides[0]);
     }
-  }, [radionuclides]); // eslint-disable-line
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radionuclides]);
 
   const T12 =
     HL[nuclide] ??
-    Number(dataset.find(d => d.radionuclide === nuclide)?.halfLife_h || 1);
+    Number(dataset.find((d) => d.radionuclide === nuclide)?.halfLife_h || 1);
 
   const tHours = Number(tH) + Number(tMin) / 60;
-  const convIn = (v) => (unit === "mCi" ? v * 37 : v);   // mCi → MBq
-  const convOut = (v) => (unit === "mCi" ? v / 37 : v);  // MBq → mCi
+  const convIn = (v) => (unit === "mCi" ? v * 37 : v);
+  const convOut = (v) => (unit === "mCi" ? v / 37 : v);
 
   const A0_MBq = convIn(Number(A0) || 0);
   const At_MBq = decay(A0_MBq, tHours, T12);
@@ -94,31 +90,52 @@ function DecayCalc({ dataset }) {
           <select
             className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
             value={nuclide}
-            onChange={e => setNuclide(e.target.value)}
+            onChange={(e) => setNuclide(e.target.value)}
           >
-            {radionuclides.map(r => (
-              <option key={r} value={r}>{r}</option>
+            {radionuclides.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
             ))}
           </select>
           <div className="text-xs opacity-70 mt-1">T½ = {T12} h</div>
         </div>
         <div>
           <label className="text-sm font-semibold">Ausgangsaktivität ({unit})</label>
-          <input className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" type="number" value={A0} onChange={e=>setA0(e.target.value)} />
+          <input
+            className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+            type="number"
+            value={A0}
+            onChange={(e) => setA0(e.target.value)}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-sm font-semibold">Zeit (h)</label>
-            <input className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" type="number" value={tH} onChange={e=>setTH(e.target.value)} />
+            <input
+              className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+              type="number"
+              value={tH}
+              onChange={(e) => setTH(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-sm font-semibold">Zeit (min)</label>
-            <input className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" type="number" value={tMin} onChange={e=>setTMin(e.target.value)} />
+            <input
+              className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+              type="number"
+              value={tMin}
+              onChange={(e) => setTMin(e.target.value)}
+            />
           </div>
         </div>
         <div>
           <label className="text-sm font-semibold">Einheit</label>
-          <select className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" value={unit} onChange={e=>setUnit(e.target.value)}>
+          <select
+            className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+          >
             <option>MBq</option>
             <option>mCi</option>
           </select>
@@ -128,8 +145,12 @@ function DecayCalc({ dataset }) {
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border p-3">
           <div className="text-sm opacity-70">Aktivität nach t</div>
-          <div className="text-2xl font-bold">{Number.isFinite(At_disp) ? At_disp.toFixed(2) : "–"} {unit}</div>
-          <div className="text-xs opacity-70">nach {tH} h {tMin>0?`${tMin} min`:''}</div>
+          <div className="text-2xl font-bold">
+            {Number.isFinite(At_disp) ? At_disp.toFixed(2) : "–"} {unit}
+          </div>
+          <div className="text-xs opacity-70">
+            nach {tH} h {tMin > 0 ? `${tMin} min` : ""}
+          </div>
         </div>
         <div className="rounded-xl border p-3">
           <div className="text-sm opacity-70">Halbwertszeiten verstrichen</div>
@@ -137,7 +158,9 @@ function DecayCalc({ dataset }) {
         </div>
         <div className="rounded-xl border p-3">
           <div className="text-sm opacity-70">Zerfallskonstante (λ)</div>
-          <div className="text-xl font-semibold">{(Math.log(2)/T12).toFixed(5)} h⁻¹</div>
+          <div className="text-xl font-semibold">
+            {(Math.log(2) / T12).toFixed(5)} h⁻¹
+          </div>
         </div>
       </div>
 
@@ -145,11 +168,22 @@ function DecayCalc({ dataset }) {
         <div className="sm:col-span-2">
           <label className="text-sm font-semibold">Zeit bis Zielaktivität ({unit})</label>
           <div className="grid grid-cols-[1fr_auto] gap-2">
-            <input className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" type="number" value={target} onChange={e=>setTarget(e.target.value)} placeholder="z. B. 370" />
-            <button onClick={()=>setTarget(0)} className="rounded-xl border px-3 py-2">Reset</button>
+            <input
+              className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+              type="number"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="z. B. 370"
+            />
+            <button onClick={() => setTarget(0)} className="rounded-xl border px-3 py-2">
+              Reset
+            </button>
           </div>
-          {tToTgt_h!=null && (
-            <div className="text-sm mt-2">≈ <b>{tToTgt_h.toFixed(2)}</b> h  •  {(tToTgt_h/24).toFixed(2)} d  •  {(tToTgt_h*60).toFixed(0)} min</div>
+          {tToTgt_h != null && (
+            <div className="text-sm mt-2">
+              ≈ <b>{tToTgt_h.toFixed(2)}</b> h • {(tToTgt_h / 24).toFixed(2)} d •{" "}
+              {(tToTgt_h * 60).toFixed(0)} min
+            </div>
           )}
         </div>
       </div>
@@ -157,7 +191,7 @@ function DecayCalc({ dataset }) {
   );
 }
 
-// ============== UI & Layout =================
+// ---------- UI ----------
 function Pill({ text }) {
   return (
     <span className="inline-block rounded-full border px-2 py-0.5 text-xs font-medium">
@@ -165,10 +199,10 @@ function Pill({ text }) {
     </span>
   );
 }
-
-function Header({tab, setTab}) {
+function Header({ tab, setTab }) {
   const base = "px-3 py-2 rounded-xl border text-sm font-medium";
-  const active = "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white";
+  const active =
+    "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white";
   const idle = "bg-white/70 dark:bg-neutral-900/60 hover:bg-white border";
   return (
     <header className="sticky top-0 z-10 backdrop-blur bg-white/70 dark:bg-neutral-900/70 border-b">
@@ -179,8 +213,18 @@ function Header({tab, setTab}) {
             <div className="text-xs opacity-70">Spick • ohne Gewähr</div>
           </div>
           <div className="flex gap-2">
-            <button className={`${base} ${tab==='overview'?active:idle}`} onClick={()=>setTab('overview')}>📘 Übersicht</button>
-            <button className={`${base} ${tab==='decay'?active:idle}`} onClick={()=>setTab('decay')}>⚛️ Zerfallsrechner</button>
+            <button
+              className={`${base} ${tab === "overview" ? active : idle}`}
+              onClick={() => setTab("overview")}
+            >
+              📘 Übersicht
+            </button>
+            <button
+              className={`${base} ${tab === "decay" ? active : idle}`}
+              onClick={() => setTab("decay")}
+            >
+              ⚛️ Zerfallsrechner
+            </button>
           </div>
         </div>
       </div>
@@ -188,43 +232,47 @@ function Header({tab, setTab}) {
   );
 }
 
-// ================== App =====================
+// ---------- App ----------
 export default function App() {
-  // 1) Daten von GitHub laden (einzige Quelle)
+  // Daten laden
   const [items, setItems] = useState([]);
   const [loadErr, setLoadErr] = useState("");
 
   useEffect(() => {
-    const url = `${RAW_URL}?v=${Date.now()}`; // Cache-Busting
+    const url = `${DATA_URL}?v=${Date.now()}`; // Cache-Busting gegen SW/Browser-Cache
     fetch(url, { cache: "no-store" })
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(setItems)
-      .catch(e => setLoadErr(`Daten-Laden fehlgeschlagen: ${e.message}`));
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => setItems(Array.isArray(data) ? data : []))
+      .catch((e) => setLoadErr(`Daten-Laden fehlgeschlagen: ${e.message}`));
   }, []);
 
-  // 2) UI-States
+  // UI-States
   const [q, setQ] = useState("");
   const [mod, setMod] = useState("Alle");
   const [org, setOrg] = useState("Alle");
   const [sort, setSort] = useState("alpha");
   const [favs, setFavs] = useState(new Set());
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState("overview");
 
-  // 3) abgeleitete Filterlisten
+  // Ableitungen
   const ORGANS = useMemo(
-    () => ["Alle", ...Array.from(new Set(items.map(d => d.organ))).sort()],
+    () => ["Alle", ...Array.from(new Set(items.map((d) => d.organ))).sort()],
     [items]
   );
   const MODALITIES = useMemo(
-    () => ["Alle", ...Array.from(new Set(items.map(d => d.modality))).sort()],
+    () => ["Alle", ...Array.from(new Set(items.map((d) => d.modality))).sort()],
     [items]
   );
 
-  // 4) Filtern & Sortieren
   const filtered = useMemo(() => {
     const qLower = q.trim().toLowerCase();
     let arr = (items || []).filter((d) => {
-      const hay = [d.radionuclide, d.prep, d.organ, d.emissions, ...(d.indications||[])].join(" ").toLowerCase();
+      const hay = [d.radionuclide, d.prep, d.organ, d.emissions, ...(d.indications || [])]
+        .join(" ")
+        .toLowerCase();
       const hitQ = !qLower || hay.includes(qLower);
       const hitMod = mod === "Alle" || d.modality === mod;
       const hitOrg = org === "Alle" || d.organ === org;
@@ -242,7 +290,9 @@ export default function App() {
   function toggleFav(id) {
     setFavs((prev) => {
       const n = new Set(prev);
-      if (n.has(id)) n.delete(id); else n.add(id);
+      const key = id || Math.random().toString(36).slice(2);
+      if (n.has(key)) n.delete(key);
+      else n.add(key);
       return n;
     });
   }
@@ -263,7 +313,7 @@ export default function App() {
         )}
 
         {/* Controls */}
-        {tab==='overview' && (
+        {tab === "overview" && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 items-end">
             <div className="sm:col-span-2">
               <label className="text-sm font-semibold">Suche</label>
@@ -276,19 +326,39 @@ export default function App() {
             </div>
             <div>
               <label className="text-sm font-semibold">Modalität</label>
-              <select className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" value={mod} onChange={(e)=>setMod(e.target.value)}>
-                {MODALITIES.map(m => <option key={m} value={m}>{m}</option>)}
+              <select
+                className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+                value={mod}
+                onChange={(e) => setMod(e.target.value)}
+              >
+                {MODALITIES.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
               <label className="text-sm font-semibold">Organ-System</label>
-              <select className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" value={org} onChange={(e)=>setOrg(e.target.value)}>
-                {ORGANS.map(o => <option key={o} value={o}>{o}</option>)}
+              <select
+                className="mt-1 w-full rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+                value={org}
+                onChange={(e) => setOrg(e.target.value)}
+              >
+                {ORGANS.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="lg:col-span-4 flex gap-2 items-center">
               <label className="text-sm font-semibold">Sortierung</label>
-              <select className="mt-1 rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60" value={sort} onChange={(e)=>setSort(e.target.value)}>
+              <select
+                className="mt-1 rounded-xl border px-3 py-2 bg-white/80 dark:bg-neutral-800/60"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
                 <option value="alpha">A–Z (Präparat)</option>
                 <option value="halfLife">Halbwertszeit</option>
               </select>
@@ -298,11 +368,14 @@ export default function App() {
         )}
 
         {/* Overview */}
-        {tab==='overview' && (
+        {tab === "overview" && (
           <>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               {filtered.map((d) => (
-                <article key={d.id || d.prep} className="rounded-2xl border p-4 shadow-sm bg-white/70 dark:bg-neutral-900/60">
+                <article
+                  key={d.id || d.prep}
+                  className="rounded-2xl border p-4 shadow-sm bg-white/70 dark:bg-neutral-900/60"
+                >
                   <div className="flex items-start gap-3">
                     <div className="grow">
                       <h2 className="text-lg font-bold tracking-tight">
@@ -316,7 +389,11 @@ export default function App() {
                     <button
                       onClick={() => toggleFav(d.id || d.prep)}
                       title="Favorit umschalten"
-                      className={`rounded-full border px-3 py-1 text-xs font-medium ${favs.has(d.id || d.prep) ? "bg-yellow-300/70" : "bg-white/50 dark:bg-neutral-800/60"}`}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                        favs.has(d.id || d.prep)
+                          ? "bg-yellow-300/70"
+                          : "bg-white/50 dark:bg-neutral-800/60"
+                      }`}
                     >
                       {favs.has(d.id || d.prep) ? "★" : "☆"}
                     </button>
@@ -344,7 +421,7 @@ export default function App() {
                     </div>
                     <div className="mt-2">
                       <dt className="font-semibold">Indikationen</dt>
-                      <dd className="opacity-90">{(d.indications||[]).join(" • ")}</dd>
+                      <dd className="opacity-90">{(d.indications || []).join(" • ")}</dd>
                     </div>
                     {d.notes && (
                       <div className="mt-2">
@@ -364,20 +441,21 @@ export default function App() {
             </div>
 
             {filtered.length === 0 && items.length > 0 && (
-              <div className="mt-10 text-center opacity-70">Keine Einträge gefunden. Suchbegriff oder Filter anpassen.</div>
+              <div className="mt-10 text-center opacity-70">
+                Keine Einträge gefunden. Suchbegriff oder Filter anpassen.
+              </div>
             )}
           </>
         )}
 
         {/* Decay Tab */}
-        {tab==='decay' && (
-          <DecayCalc dataset={items} />
-        )}
+        {tab === "decay" && <DecayCalc dataset={items} />}
 
         <footer className="mt-10 text-xs opacity-70 leading-relaxed">
           <p>
-            ✋ Achtung: Diese Übersicht ist ein vereinfachter Spickzettel. Dosisangaben und Vorbereitung können je nach Hausstandard,
-            Patient:in und aktueller Leitlinie variieren. Massgebend sind lokale SOPs und ärztliche Anordnung.
+            ✋ Achtung: Diese Übersicht ist ein vereinfachter Spickzettel. Dosisangaben und
+            Vorbereitung können je nach Hausstandard variieren. Massgebend sind lokale SOPs und
+            ärztliche Anordnung.
           </p>
         </footer>
       </main>
