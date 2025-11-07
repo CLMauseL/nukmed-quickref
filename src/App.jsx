@@ -4,10 +4,10 @@ import React, { useEffect, useMemo, useState } from "react";
  * NukMed QuickRef – App.jsx (Daten live von GitHub JSON)
  * EINZIGE Quelle = GitHub-JSON (keine Daten mehr in dieser Datei)
  *
- * TODO: <--- HIER DEINE RAW-URL EINTRAGEN
- *  z.B. https://raw.githubusercontent.com/<USER>/<REPO>/<BRANCH>/data/radiopharmaka.json
+ * TODO:https://github.com/CLMauseL/nukmed-quickref/blob/main/src/radiopharmaka.json
+ *
  */
-const RAW_URL = "https://raw.githubusercontent.com/<USER>/<REPO>/<BRANCH>/data/radiopharmaka.json";
+const RAW_URL = "https://github.com/CLMauseL/nukmed-quickref/blob/main/src/radiopharmaka.json";
 
 // ============== Zerfallsrechner =============
 function decay(A0, t_hours, T12_h) {
